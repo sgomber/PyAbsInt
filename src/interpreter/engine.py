@@ -1,6 +1,6 @@
 import ast
-from interpreter.expr import LinearExpr
-from interpreter.parser import parse_expr
+from src.interpreter.expr import LinearExpr
+from src.interpreter.parser import parse_expr
 
 class AbstractInterpreter(ast.NodeVisitor):
     def __init__(self, domain):

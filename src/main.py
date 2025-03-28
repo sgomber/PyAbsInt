@@ -1,6 +1,6 @@
 import ast
-from interpreter.engine import AbstractInterpreter
-from abstract_domains.interval import Interval, IntervalDomain
+from src.interpreter.engine import AbstractInterpreter
+from src.abstract_domains.apron_box import ApronBoxDomain
 
 code = """
 def func():
@@ -12,11 +12,11 @@ tree = ast.parse(code)
 func = tree.body[0]
 
 initial_env = {
-    'a': Interval(-2, -1),
-    'b': Interval(0, 4)
+    'a': (-2, -1),
+    'b': (0, 4)
 }
 
-domain = IntervalDomain(initial_env)
+domain = ApronBoxDomain(initial_env)
 interpreter = AbstractInterpreter(domain)
 interpreter.visit(func)
 

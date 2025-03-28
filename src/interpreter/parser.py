@@ -1,5 +1,5 @@
 import ast
-from interpreter.expr import LinearExpr
+from src.interpreter.expr import LinearExpr
 
 def parse_expr(expr):
     def walk(node):
