@@ -1,5 +1,5 @@
 import ast
-from src.interpreter.expr import LinearExpr
+from src.interpreter.expr_cons import LinearExpr, LinearConstraint, Op
 
 def parse_expr(expr):
     def walk(node):
@@ -45,3 +45,13 @@ def parse_expr(expr):
         return None
 
     return walk(expr)
+
+def parse_cons(node):
+    if not isinstance(node, ast.Compare):
+        raise ValueError(f"Expected comparison node, got: {type(node).__name__}")
+
+    lhs = parse_expr(node.left)
+    rhs = parse_expr(node.comparators[0])
+    op = Op.from_ast(node.ops[0])
+
+    return LinearConstraint(lhs, op, rhs)
