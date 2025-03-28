@@ -1,18 +1,43 @@
 import ast
+from dataclasses import dataclass
+
 from src.abstract_domains.abstract_domain_handler import AbstractDomainHandler
 from src.interpreter.expr_cons import LinearConstraint, LinearExpr, Op
 from src.interpreter.parser import parse_cons, parse_expr
+from src.utils import get_function_ast, read_code_from_file
+
+@dataclass
+class AbstractInterpreterConfig:
+    # Required fields
+    domain_handler: AbstractDomainHandler
 
 class AbstractInterpreter(ast.NodeVisitor):
-    def __init__(self, domain_handler:AbstractDomainHandler, init_state_config = None):
+    def __init__(self, config:AbstractInterpreterConfig):
         super().__init__()
-        self.domain_handler = domain_handler
+        self.domain_handler = config.domain_handler
+        self._init_state = None
+        self._curr_state = None
+
+    def execute(self, code_filename, function_name, init_state_config = None):
+        # Parse code and get function
+        code = read_code_from_file(code_filename)
+        func_ast = get_function_ast(code, function_name)
+
+        # Set initial and current state
         self._init_state = self.domain_handler.get_init_state(init_state_config)
         self._curr_state = self._init_state
+
+        self.visit(func_ast)
+
+        return self._curr_state
 
     def visit_FunctionDef(self, node):
         for stmt in node.body:
             self.visit(stmt)
+
+    def visit_arg(self, node):
+        # Ignore argument nodes completely for now
+        pass
 
     def visit_Assign(self, node):
         var = node.targets[0].id
