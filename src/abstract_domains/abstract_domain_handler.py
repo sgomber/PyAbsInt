@@ -19,6 +19,10 @@ class AbstractDomainHandler(ABC, Generic[StateT]):
         pass
 
     @abstractmethod
+    def are_states_equal(self, state1:StateT, state2:StateT) -> bool:
+        pass
+
+    @abstractmethod
     def assign_linexpr(self, state:StateT, var, linexpr:LinearExpr):
         pass
 
@@ -28,4 +32,8 @@ class AbstractDomainHandler(ABC, Generic[StateT]):
 
     @abstractmethod
     def join(self, state1:StateT, state2:StateT) -> StateT:
+        pass
+
+    @abstractmethod
+    def widen(self, state1:StateT, state2:StateT) -> StateT:
         pass

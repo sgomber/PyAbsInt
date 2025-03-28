@@ -50,6 +50,16 @@ class ApronBoxDomain(AbstractDomainHandler[BoxState]):
     def copy_state(self, state:BoxState):
         return copy.deepcopy(state)
 
+    def are_states_equal(self, state1:BoxState, state2:BoxState):
+        if state1.var_set != state2.var_set:
+            return False
+        
+        for k in state1.var_set:
+            if state1.box.bound_variable(PyVar(k)) != state2.box.bound_variable(PyVar(k)):
+                return False
+        
+        return True
+    
     def _linexpr_to_apron_linexpr(self, env, linexpr:LinearExpr):
         expr = PyLinexpr1(env)
 
@@ -103,3 +113,9 @@ class ApronBoxDomain(AbstractDomainHandler[BoxState]):
         box2 = state2.box
 
         return BoxState(box1.join(box2), state1.var_set | state2.var_set)
+
+    def widen(self, state1:BoxState, state2:BoxState):
+        box1 = state1.box
+        box2 = state2.box
+
+        return BoxState(box1.widening(box2), state1.var_set | state2.var_set)
