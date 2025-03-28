@@ -24,7 +24,7 @@ class ApronBoxDomain(AbstractDomainHandler[BoxState]):
 
         # If var already there, then return
         if pyvar in state.box.environment:
-            return
+            return state
         
         state.box.environment = state.box.environment.add(real_vars=[pyvar])
         state.box = state.box.forget([pyvar])
