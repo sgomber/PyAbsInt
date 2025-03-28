@@ -15,3 +15,8 @@ class AbstractInterpreter(ast.NodeVisitor):
         expr = parse_expr(node.value)
         if isinstance(expr, LinearExpr):
             self.domain.assign_linexpr(var, expr)
+
+    def generic_visit(self, node):
+        raise NotImplementedError(
+            f"No visitor method implemented for node type '{type(node).__name__}'."
+        )
