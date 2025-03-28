@@ -26,14 +26,17 @@ class AbstractInterpreter(ast.NodeVisitor):
         code = read_code_from_file(code_filename)
         func_ast = get_function_ast(code, function_name)
 
+        return self.execute_on_ast(func_ast, init_state_config)
+
+    def execute_on_ast(self, code_ast, init_state_config = None):
         # Set initial and current state
         self._init_state = self.config.domain_handler.get_init_state(init_state_config)
         self._curr_state = self._init_state
 
-        self.visit(func_ast)
+        self.visit(code_ast)
 
         return self._curr_state
-
+    
     def visit_FunctionDef(self, node):
         for stmt in node.body:
             self.visit(stmt)
