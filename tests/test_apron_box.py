@@ -9,7 +9,7 @@ from src.interpreter.engine import AbstractInterpreterConfig, AbstractInterprete
 class TestApronBox(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        self.test_programs_folder = "../test_programs/"
+        self.test_programs_folder = "../programs/"
         self.box_handler=ApronBoxDomain()
         self.config = AbstractInterpreterConfig(domain_handler=self.box_handler)
         self.abs_interpreter = AbstractInterpreter(self.config)
