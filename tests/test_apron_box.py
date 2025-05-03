@@ -78,5 +78,22 @@ class TestApronBox(unittest.TestCase):
         final_state = self.abs_interpreter.execute(filename, funcname, initial_env)
         self._compare_states(expected_output_env, final_state)
 
+    def test_4(self):
+        filename = self.test_programs_folder + "t4.py"
+        funcname = "func"
+        initial_env = {
+            'x': (0, 5),
+            'y': (0, 5)
+        }
+
+        expected_output_env = {
+            'x': (2, float('inf')),
+            'y': (1, float('inf')),
+            'c': (16, float('inf')),
+        }
+
+        final_state = self.abs_interpreter.execute(filename, funcname, initial_env)
+        self._compare_states(expected_output_env, final_state)
+
 if __name__ == "__main__":
     unittest.main()

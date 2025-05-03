@@ -8,7 +8,7 @@ if __name__ == "__main__":
     config = AbstractInterpreterConfig(domain_handler=box_handler)
     abs_interpreter = AbstractInterpreter(config)
 
-    filename = "../tests/t3.py"
+    filename = "../test_programs/t4.py"
     funcname = "func"
     initial_env = {
         'x': (0, 5),

@@ -112,10 +112,28 @@ class ApronBoxDomain(AbstractDomainHandler[BoxState]):
         box1 = state1.box
         box2 = state2.box
 
-        return BoxState(box1.join(box2), state1.var_set | state2.var_set)
+        # Compute union of environments and update the environments
+        all_vars = list(set(state1.var_set) | set(state2.var_set))
+        all_pyvars = [PyVar(v) for v in all_vars]
+        box1.environment = box1.environment.add(real_vars=[v for v in all_pyvars if v not in box1.environment])
+        box2.environment = box2.environment.add(real_vars=[v for v in all_pyvars if v not in box2.environment])
+
+        # Now join safely
+        joined_box = box1.join(box2)
+
+        return BoxState(joined_box, set(all_vars))
 
     def widen(self, state1:BoxState, state2:BoxState):
         box1 = state1.box
         box2 = state2.box
 
-        return BoxState(box1.widening(box2), state1.var_set | state2.var_set)
+        # Compute union of environments and update the environments
+        all_vars = list(set(state1.var_set) | set(state2.var_set))
+        all_pyvars = [PyVar(v) for v in all_vars]
+        box1.environment = box1.environment.add(real_vars=[v for v in all_pyvars if v not in box1.environment])
+        box2.environment = box2.environment.add(real_vars=[v for v in all_pyvars if v not in box2.environment])
+
+        # Now widen safely
+        widened_box = box1.widening(box2)
+
+        return BoxState(widened_box, set(all_vars))

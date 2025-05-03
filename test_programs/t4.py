@@ -1,8 +1,9 @@
 def func(x, y):
-    x = 1
+    x = 2
     y = 1
-    c = 2
+    c = 0
     while c <= 16:
-        a = x + y
-        b = x - y
-        c = a + b
+        x = x + y
+        y = 2*y
+        a = x - y
+        c = c + a
