@@ -1,17 +1,21 @@
 # PyAbsInt
 
-An abstract interpreter implemented in Python.
+An lightweight abstract interpreter implemented in Python.
+
+## Supported Abstract Domains
+
+1. Boxes (Implementation from [APRON](https://github.com/caterinaurban/apronpy))
+2. Octagon (Implementation from [ELINA](https://github.com/eth-sri/ELINA))
+
 
 ## Installation
 
-1. Install [APRON](https://github.com/antoinemine/apron) (for the boxes domain implementation).
-
-2. Run
+1. Run
 ```
 pip install requirements.txt
 ```
 
-## Supported Abstract Domains
-
-1. Boxes (Implementation from [Apron](https://github.com/caterinaurban/apronpy))
+2. Install and build:
+    - [APRON](https://github.com/antoinemine/apron) (for `Boxes` domain)
+    - [ELINA](https://github.com/eth-sri/ELINA) (for `Octagon` domain)
 
