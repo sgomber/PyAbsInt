@@ -11,14 +11,18 @@ from src.interpreter.expr_cons import LinearConstraint, LinearExpr, Op
 from elina_abstract0 import *
 from elina_dimension import *
 from elina_lincons0 import *
+from elina_tcons import *
+from elina_texpr0 import *
 from elina_scalar import *
 from opt_oct import *
+from opt_zones import *
 
 class ElinaDomain(Enum):
     """
     Class to list all possible supported domains from the ELINA library.
     """
     OCT = "oct"
+    ZONES = "zones"
 
     @classmethod
     def from_value(cls, value):
@@ -43,10 +47,20 @@ class ElinaDomainHandler(AbstractDomainHandler[ElinaState]):
     def _get_elina_man(self, elina_domain):
         if elina_domain == ElinaDomain.OCT:
             return opt_oct_manager_alloc()
+        elif elina_domain == ElinaDomain.ZONES:
+            return opt_zones_manager_alloc()
+        else:
+            raise ValueError(f"No manager defined for elina domain {elina_domain}")
 
-    def __init__(self, domain_name):
+    def __init__(self, domain_name, use_elina_linexprs = False):
         self.elina_domain = ElinaDomain.from_value(domain_name)
         self.elina_man = self._get_elina_man(self.elina_domain)
+        self.use_elina_linexprs = use_elina_linexprs
+
+    def _use_elina_linexprs(self):
+        # Use elina linexpr if the flag is set and the domain is not Zones
+        # (Elina zones do not support linear expressions)
+        return self.use_elina_linexprs and self.elina_domain != ElinaDomain.ZONES
 
     def _get_dimensions(self, state:ElinaState):
         dim = elina_abstract0_dimension(self.elina_man, state.elina_obj)
@@ -182,6 +196,16 @@ class ElinaDomainHandler(AbstractDomainHandler[ElinaState]):
 
         return elina_lincons_arr
 
+    def _elina_lincons_array_to_tcons_array(self, elina_lincons_array):
+        tcons_arr = elina_tcons0_array_make(elina_lincons_array.size)
+
+        for i in range(elina_lincons_array.size):
+            tcons_arr.p[i].texpr0 = elina_texpr0_from_linexpr0(elina_lincons_array.p[i].linexpr0)
+            tcons_arr.p[i].constyp = elina_lincons_array.p[i].constyp
+            tcons_arr.p[i].scalar = elina_lincons_array.p[i].scalar
+
+        return tcons_arr
+
     ##
     ## Main functions
     ##
@@ -212,17 +236,31 @@ class ElinaDomainHandler(AbstractDomainHandler[ElinaState]):
         # Get the elina linexpr from the parsed linexpr
         elina_linexpr = self._linexpr_to_elina_linexpr(linexpr, state.var_dim_map)
 
-        state.elina_obj = elina_abstract0_assign_linexpr_array(self.elina_man, False, state.elina_obj,
-                                                               dim, elina_linexpr,
-                                                               1, None)
-        
+        if self._use_elina_linexprs():
+            state.elina_obj = elina_abstract0_assign_linexpr_array(self.elina_man, False, state.elina_obj,
+                                                                   dim, elina_linexpr,
+                                                                   1, None)
+        else:
+            # Get the elina texpr from the elina linexpr
+            elina_texpr = elina_texpr0_from_linexpr0(elina_linexpr)
+
+            state.elina_obj = elina_abstract0_assign_texpr_array(self.elina_man, False, state.elina_obj,
+                                                                 dim, elina_texpr,
+                                                                 1, None)
 
     def meet_lincons(self, state:ElinaState, lincons:LinearConstraint):
-        # Get the elina lincons from the parsed lincons
+        # Get the elina lincons array from the parsed lincons
         elina_lincons_array = self._lincons_to_elina_lincons_array(lincons, state.var_dim_map)
 
-        # Take the meet with the array
-        state.elina_obj = elina_abstract0_meet_lincons_array(self.elina_man, False, state.elina_obj, elina_lincons_array)
+        if self._use_elina_linexprs():
+            # Take the meet with the elina lincons array
+            state.elina_obj = elina_abstract0_meet_lincons_array(self.elina_man, False, state.elina_obj, elina_lincons_array)
+        else:
+            # Get elina tcons array from elina lincons array
+            elina_tcons_array = self._elina_lincons_array_to_tcons_array(elina_lincons_array)
+
+            # Take the meet with the elina tcons array
+            state.elina_obj = elina_abstract0_meet_tcons_array(self.elina_man, False, state.elina_obj, elina_tcons_array)
 
     def join(self, state1:ElinaState, state2:ElinaState) -> ElinaState:
         new_var_dim_map = self._merge_state_environments(state1, state2)
